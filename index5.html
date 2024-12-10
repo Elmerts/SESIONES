@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro e Inicio de Sesión</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="estilos.css">
+</head>
+
+<body>
+    <div class="container">
+        <form id="registro" style="display:none;">
+            <h2>Registro</h2>
+            <div class="form-group">
+                <label for="nombres">Nombres:</label>
+                <input type="text" id="nombres" class="form-control" name="nombres" required>
+            </div>
+            <div class="form-group">
+                <label for="apellidos">Apellidos:</label>
+                <input type="text" id="apellidos" class="form-control" name="apellidos" required>
+            </div>
+            <div class="form-group">
+                <label for="fechaNacimiento">Fecha de Nacimiento:</label>
+                <input type="date" id="fechaNacimiento" class="form-control" name="fechaNacimiento" required>
+            </div>
+            <div class="form-group">
+                <label for="contraseña">Contraseña:</label>
+                <input type="password" id="contraseña" class="form-control" name="contraseña" required>
+            </div>
+            <div class="form-group">
+                <label for="verificarContraseña">Verificar Contraseña:</label>
+                <input type="password" id="verificarContraseña" class="form-control" name="verificarContraseña" required>
+            </div>
+            <button type="submit" class="btn btn-danger">Registrar</button>
+        </form>
+
+        <div id="login" style="display:block;">
+            <form id="iniciosesion">
+                <h2>Iniciar Sesión</h2>
+                <div class="form-group">
+                    <label for="correo">Correo Electrónico:</label>
+                    <input type="email" id="correo" class="form-control" name="correo" required>
+                </div>
+                <div class="form-group">
+                    <label for="contraseñaLogin">Contraseña:</label>
+                    <input type="password" id="contraseñainicio" class="form-control" name="contraseñaLogin" required>
+                </div>
+                <button type="submit" class="btn btn-danger">Iniciar Sesión</button>
+            </form>
+            <button id="irregistro" class="btn btn-link">Regístrate aquí</button>
+            <button id="botonOlvidar" class="btn btn-link">¿Olvidaste tu contraseña?</button>
+        </div>
+
+        <div id="restablecer" style="display:none;">
+            <h2>Restablecer Contraseña</h2>
+            <div class="form-group">
+                <label for="correoRestablecer">Ingresa tu correo electrónico:</label>
+                <input type="email" id="correoRestablecer" class="form-control" required>
+            </div>
+            <button id="enviarRestablecer" class="btn btn-danger">Enviar</button>
+            <button id="volverLogin" class="btn btn-link">Volver al inicio de sesión</button>
+        </div>
+
+        <div id="cambiarContraseña" style="display:none;">
+            <h2>Cambiar Contraseña</h2>
+            <div class="form-group">
+                <label for="nuevaContraseña">Nueva Contraseña:</label>
+                <input type="password" id="nuevaContraseña" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="confirmarNuevaContraseña">Confirmar Nueva Contraseña:</label>
+                <input type="password" id="confirmarNuevaContraseña" class="form-control" required>
+            </div>
+            <button id="guardarNuevaContraseña" class="btn btn-danger">Guardar Nueva Contraseña</button>
+            <button id="volverRestablecer" class="btn btn-link">Volver a Restablecer</button>
+        </div>
+
+        <div id="bloqueo" class="bloqueo">
+            <img src="img/cuenta.png" alt="Bloqueo" />
+            <h2>CUENTA BLOQUEADA</h2>
+            <p>ALCANZASTE TU LÍMITE DE INTENTOS</p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        let usuariosRegistrados = JSON.parse(localStorage.getItem('usuariosRegistrados')) || [];
+        let i = 0;
+
+        document.getElementById('registro').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const nombres = document.getElementById('nombres').value.split(' ');
+            const apellidos = document.getElementById('apellidos').value.split(' ');
+            const contraseña = document.getElementById('contraseña').value;
+            const verificarContraseña = document.getElementById('verificarContraseña').value;
+
+            const regexContraseña = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!regexContraseña.test(contraseña)) {
+                alert('La contraseña debe tener al menos 8 caracteres, incluyendo 1 mayúscula, 1 minúscula, 1 dígito y 1 carácter especial.');
+                return;
+            }
+
+            if (contraseña !== verificarContraseña) {
+                alert('Las contraseñas no coinciden.');
+                return;
+            }
+
+            const primerNombre = nombres[0];
+            const segundoNombre = nombres[1] || primerNombre;
+            const primerApellido = apellidos[0];
+            const segundoApellido = apellidos[1];
+
+            const correo = `${primerApellido.charAt(0)}${primerNombre.charAt(1)}${primerNombre.charAt(2)}${segundoApellido.slice(-2)}${segundoNombre.slice(1)}@gmail.com`;
+
+            const nuevoUsuario = { correo, contraseña };
+            usuariosRegistrados.push(nuevoUsuario);
+            localStorage.setItem('usuariosRegistrados', JSON.stringify(usuariosRegistrados));
+
+            document.writeln(`CUENTA REGISTRADA<br>`);
+            document.writeln(`Su correo nuevo es: ${correo}`);
+            document.getElementById('registro').reset();
+            toggleForms();
+        });
+
+        document.getElementById('iniciosesion').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const correo = document.getElementById('correo').value;
+            const contraseña = document.getElementById('contraseñainicio').value;
+
+            const usuarioRegistrado = usuariosRegistrados.find(usuario => usuario.correo === correo && usuario.contraseña === contraseña);
+            if (usuarioRegistrado) {
+                alert(`Inicio de sesión exitoso`);
+                window.location.href = 'https://elmerts.github.io/PROYECTO-LANDING-PAGE/';
+            } else {
+                alert('Usuario y contraseña incorrectas. Por favor, intente nuevamente.');
+                i += 1;
+            }
+            if (i === 3) {
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('bloqueo').style.display = 'block';
+            }
+        });
+
+        document.getElementById('irregistro').addEventListener('click', function () {
+            toggleForms();
+        });
+
+        document.getElementById('botonOlvidar').addEventListener('click', function () {
+            toggleRestablecer();
+        });
+
+        document.getElementById('enviarRestablecer').addEventListener('click', function () {
+            const correoRestablecer = document.getElementById('correoRestablecer').value;
+            const usuarioEncontrado = usuariosRegistrados.find(usuario => usuario.correo === correoRestablecer);
+            if (usuarioEncontrado) {
+                alert('Correo verificado. Ahora puedes cambiar tu contraseña.');
+                toggleCambioContraseña();
+            } else {
+                alert('Este correo no está registrado.');
+            }
+        });
+
+        document.getElementById('volverLogin').addEventListener('click', function () {
+            toggleRestablecer();
+        });
+
+        document.getElementById('guardarNuevaContraseña').addEventListener('click', function () {
+            const nuevaContraseña = document.getElementById('nuevaContraseña').value;
+            const confirmarNuevaContraseña = document.getElementById('confirmarNuevaContraseña').value;
+            const regexContraseña = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+            if (!regexContraseña.test(nuevaContraseña)) {
+                alert('La contraseña debe tener al menos 8 caracteres, incluyendo 1 mayúscula, 1 minúscula, 1 dígito y 1 carácter especial.');
+                return;
+            }
+            if (nuevaContraseña !== confirmarNuevaContraseña) {
+                alert('Las contraseñas no coinciden.');
+                return;
+            }
+
+            const correoRestablecer = document.getElementById('correoRestablecer').value;
+            const usuarioEncontrado = usuariosRegistrados.find(usuario => usuario.correo === correoRestablecer);
+
+            if (usuarioEncontrado) {
+                usuarioEncontrado.contraseña = nuevaContraseña; // Actualiza la contraseña
+                localStorage.setItem('usuariosRegistrados', JSON.stringify(usuariosRegistrados)); // Guarda el array actualizado
+                alert('Contraseña cambiada exitosamente.');
+                document.getElementById('cambiarContraseña').style.display = 'none';
+                document.getElementById('restablecer').style.display = 'none';
+                document.getElementById('login').style.display = 'block';
+            } else {
+                alert('Usuario no encontrado.');
+            }
+        });
+
+        document.getElementById('volverRestablecer').addEventListener('click', function () {
+            toggleCambioContraseña();
+        });
+
+        function toggleForms() {
+            const registrovisible = document.getElementById('registro');
+            const loginvisible = document.getElementById('login');
+            registrovisible.style.display = registrovisible.style.display === 'none' ? 'block' : 'none';
+            loginvisible.style.display = loginvisible.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleRestablecer() {
+            const restablecerVisible = document.getElementById('restablecer');
+            const loginvisible = document.getElementById('login');
+            restablecerVisible.style.display = restablecerVisible.style.display === 'none' ? 'block' : 'none';
+            loginvisible.style.display = loginvisible.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function toggleCambioContraseña() {
+            const cambiarContraseñaVisible = document.getElementById('cambiarContraseña');
+            const restablecerVisible = document.getElementById('restablecer');
+            cambiarContraseñaVisible.style.display = cambiarContraseñaVisible.style.display === 'none' ? 'block' : 'none';
+            restablecerVisible.style.display = restablecerVisible.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+
+</html>
